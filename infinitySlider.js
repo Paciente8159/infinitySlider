@@ -7,11 +7,19 @@ function infinitySlider(options) {
   this.slides = document.querySelectorAll(
     this.options.sliderSelector + ">" + this.options.slideSelector
   );
+  //no slides nothing to do
+  if(!this.slides)
+  {
+    return;
+  }
+
   this.slidesdots = document.querySelectorAll(
     this.options.sliderSelector + ">" + this.options.dotSelector
   );
-  if (this.slides.length > 1) {
-    this.slidesdots[0].checked = true;
+  
+  this.activeDot = this.slidesdots[0];
+  if(this.activeDot){
+    this.activeDot.classList.add("active");
   }
 
   this.enableAnimations();
@@ -104,11 +112,18 @@ infinitySlider.prototype.sendSlidesToBack = function () {
 
 infinitySlider.prototype.rearangeLoop = function () {
   var loop = Math.ceil(this.slides.length / 2);
+  loop = ((this.slides.length % 2)) ? loop : loop + 1;
   var next = this.index;
   var prev = this.index;
 
   this.slides[this.index].style.transform = "translateX(0%)";
   this.slides[this.index].style.zIndex = -1;
+  
+  document.querySelectorAll(
+    this.options.sliderSelector + ">" + this.options.dotSelector + ".active"
+  ).forEach(function(element){
+    element
+  });
   for (var i = 1; i < loop; i++) {
     next++;
     next = next < this.slides.length ? next : 0;
@@ -121,7 +136,15 @@ infinitySlider.prototype.rearangeLoop = function () {
     this.slides[prev].style.zIndex = -i - 1;
   }
 
-  this.slidesdots[this.index].checked = true;
+  this.updateDots();
+};
+
+infinitySlider.prototype.updateDots = function (){
+  if(this.activeDot){
+    this.activeDot.classList.remove("active");
+    this.activeDot = this.slidesdots[this.index];
+    this.activeDot.classList.add("active");
+  }
 };
 
 infinitySlider.prototype.next = function () {
@@ -178,6 +201,8 @@ infinitySlider.prototype.goto = function (index) {
   }
 
   this.index = index;
+  this.updateDots();
+
   setTimeout(
     this.rearangeLoop.bind(this),
     Math.max(
