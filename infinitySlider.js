@@ -8,17 +8,24 @@ function infinitySlider(options) {
     this.options.sliderSelector + ">" + this.options.slideSelector
   );
   //no slides nothing to do
-  if(!this.slides)
-  {
+  if (!this.slides) {
     return;
   }
+
+  for (var i = 0; i < this.slides.length; i++) {
+    this.slider.appendChild(this.slides[i].cloneNode(true));
+  }
+
+  this.slides = document.querySelectorAll(
+    this.options.sliderSelector + ">" + this.options.slideSelector
+  );
 
   this.slidesdots = document.querySelectorAll(
     this.options.sliderSelector + ">" + this.options.dotSelector
   );
-  
+
   this.activeDot = this.slidesdots[0];
-  if(this.activeDot){
+  if (this.activeDot) {
     this.activeDot.classList.add("active");
   }
 
@@ -40,7 +47,9 @@ function infinitySlider(options) {
 infinitySlider.prototype.getDotIndex = function (element) {
   for (var i = 0; i < this.slidesdots.length; i++) {
     if (this.slidesdots[i] === element) {
-      return i;
+      return this.index < this.slidesdots.length
+        ? i
+        : i + this.slidesdots.length;
     }
   }
 
@@ -72,7 +81,7 @@ infinitySlider.prototype.activateSlide = function (element) {
 infinitySlider.prototype.startAutoPlay = function () {
   if (this.options.autoplay) {
     this.autoplayInterval = setInterval(
-      function(){
+      function () {
         this.index++;
         this.index = this.index < this.slides.length ? this.index : 0;
         this.rearangeLoop();
@@ -106,24 +115,39 @@ infinitySlider.prototype.disableAnimations = function () {
 
 infinitySlider.prototype.sendSlidesToBack = function () {
   for (var i = 0; i < this.slides.length; i++) {
-    this.slides[i].style.zIndex = -this.slides.length;
+    if (i != this.index) {
+      this.slides[i].style.zIndex = -this.slides.length;
+    }
   }
+};
+
+/**
+ * Prepares the slides for animated motion
+ * @param {number} amount Number of slides to translate. A negative number means a backward motion.
+ */
+infinitySlider.prototype.prepLoop = function (amount) {
+  this.disableAnimations();
+  this.sendSlidesToBack();
+  var dir = Math.sign(amount);
+  amount += dir;
+  for (var i = 0; i != amount; i += dir) {
+    var index = this.index + i;
+    index = (index<this.slides.length) ? index : index - this.slides.length;
+    index = (index < 0) ? this.slides.length + index : index;
+    this.slides[index].style.transform = "translateX("+ i * 100 + "%)";
+  }
+  this.enableAnimations();
 };
 
 infinitySlider.prototype.rearangeLoop = function () {
   var loop = Math.ceil(this.slides.length / 2);
-  loop = ((this.slides.length % 2)) ? loop : loop + 1;
+  loop = this.slides.length % 2 ? loop : loop + 1;
   var next = this.index;
   var prev = this.index;
 
   this.slides[this.index].style.transform = "translateX(0%)";
   this.slides[this.index].style.zIndex = -1;
-  
-  document.querySelectorAll(
-    this.options.sliderSelector + ">" + this.options.dotSelector + ".active"
-  ).forEach(function(element){
-    element
-  });
+
   for (var i = 1; i < loop; i++) {
     next++;
     next = next < this.slides.length ? next : 0;
@@ -139,10 +163,10 @@ infinitySlider.prototype.rearangeLoop = function () {
   this.updateDots();
 };
 
-infinitySlider.prototype.updateDots = function (){
-  if(this.activeDot){
+infinitySlider.prototype.updateDots = function () {
+  if (this.activeDot) {
     this.activeDot.classList.remove("active");
-    this.activeDot = this.slidesdots[this.index];
+    this.activeDot = this.slidesdots[this.index % this.slidesdots.length];
     this.activeDot.classList.add("active");
   }
 };
@@ -164,7 +188,12 @@ infinitySlider.prototype.prev = function () {
 };
 
 infinitySlider.prototype.goto = function (index) {
-  this.stopAutoPlay();
+  this.prepLoop(index - this.index);
+  this.index = index;
+  this.rearangeLoop();
+  this.updateDots();
+
+  /*this.stopAutoPlay();
   var diff = index - this.index;
   var dir = Math.sign(diff);
   diff = Math.abs(diff);
@@ -211,7 +240,7 @@ infinitySlider.prototype.goto = function (index) {
     )
   );
 
-  this.startAutoPlay();
+  this.startAutoPlay();*/
 };
 
 infinitySlider.prototype.defaultOptions = function (options) {
