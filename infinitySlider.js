@@ -209,9 +209,3 @@ infinitySlider.prototype.defaultOptions = function (options) {
 
   return fulloptions;
 };
-
-const myslider = new infinitySlider({
-  dotSelector: "input",
-  debug: true,
-});
-(function () {})();
