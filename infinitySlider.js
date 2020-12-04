@@ -192,55 +192,6 @@ infinitySlider.prototype.goto = function (index) {
   this.index = index;
   this.rearangeLoop();
   this.updateDots();
-
-  /*this.stopAutoPlay();
-  var diff = index - this.index;
-  var dir = Math.sign(diff);
-  diff = Math.abs(diff);
-
-  //if not shortest route invert dir
-  if (diff * 2 >= this.slides.length) {
-    diff = this.slides.length - diff;
-    dir = -dir;
-  }
-
-  diff++;
-  this.disableAnimations();
-  this.sendSlidesToBack();
-
-  for (
-    var i = this.slides.length + this.index, j = 0;
-    j < diff;
-    i += dir, j++
-  ) {
-    var k = i < this.slides.length ? i : i % this.slides.length;
-    this.slides[k].style.transform = "translateX(" + dir * j * 100 + "%)";
-    this.slides[k].style.zIndex = -1;
-  }
-
-  this.enableAnimations();
-
-  for (
-    var i = this.slides.length + this.index, j = diff - 1;
-    j >= 0;
-    i += dir, j--
-  ) {
-    var k = i < this.slides.length ? i : i % this.slides.length;
-    this.slides[k].style.transform = "translateX(" + -dir * j * 100 + "%)";
-  }
-
-  this.index = index;
-  this.updateDots();
-
-  setTimeout(
-    this.rearangeLoop.bind(this),
-    Math.max(
-      this.options.transitionTime * 1000,
-      this.options.autoplayTime * 500
-    )
-  );
-
-  this.startAutoPlay();*/
 };
 
 infinitySlider.prototype.defaultOptions = function (options) {
