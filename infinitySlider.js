@@ -134,12 +134,18 @@ infinitySlider.prototype.sendSlidesToBack = function () {
     var index = this.index + i;
     index = (index<this.slides.length) ? index : index - this.slides.length;
     index = (index < 0) ? this.slides.length + index : index;
-    this.slides[index].style.transform = "translateX("+ (i + this.options.slideOffset) * 100 +  "%)";
+    this.slides[index].style.transform = "translateX("+ (i + this.options.transformationOffset) * 100 +  "%)";
   }
   this.enableAnimations();
 };*/
 
 infinitySlider.prototype.rearangeLoop = function (dir) {
+
+  var f = this.options.transformationFunc;
+  var o =  this.options.transformationOffset;
+  var m = this.options.transformationStep;
+  var u = this.options.transformationUnits;
+
   var previndex = this.index - dir;
   var amount = Math.abs(dir);
   previndex = previndex < this.slides.length ? previndex : 0;
@@ -150,7 +156,7 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
   var prev = previndex;
 
   this.disableAnimations();
-  this.slides[previndex].style.zIndex = -1;
+  this.slides[previndex].style.zIndex = -2;
   for (var i = 1; i < loop; i++) {
     next++;
     next = next < this.slides.length ? next : 0;
@@ -178,7 +184,7 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
 
   var next = this.index;
   var prev = this.index;
-  this.slides[this.index].style.transform = "translateX(" + this.options.slideOffset * 100 + "%)";
+  this.slides[this.index].style.transform = f + "(" + o * m +  u +")";
   
   for (var i = 1; i < loop; i++) {
     next++;
@@ -186,8 +192,8 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
     prev--;
     prev = prev < 0 ? this.slides.length - 1 : prev;
 
-    this.slides[next].style.transform = "translateX(" + (i + this.options.slideOffset) * 100 + "%)";
-    this.slides[prev].style.transform = "translateX(" + -(i + this.options.slideOffset) * 100 + "%)";
+    this.slides[next].style.transform = f + "(" + (i + o) * m +  u +")";
+    this.slides[prev].style.transform = f + "(" + (-i + o) * m +  u +")";
   }
 
   this.updateDots();
@@ -241,7 +247,10 @@ infinitySlider.prototype.defaultOptions = function (options) {
     transitionEasing: "ease-in-out",
     autoplay: true,
     autoplayTime: 5,
-    slideOffset: 0,
+    transformationOffset: 0,
+    transformationFunc: "translateX",
+    transformationStep: 100,
+    transformationUnits: "%",
   };
 
   Object.getOwnPropertyNames(options).forEach(function (element) {
