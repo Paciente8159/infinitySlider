@@ -30,7 +30,7 @@ function infinitySlider(options) {
   }
 
   this.enableAnimations();
-  this.rearangeLoop();
+  this.rearangeLoop(0);
 
   this.autoplayInterval = null;
   this.startAutoPlay();
@@ -84,7 +84,7 @@ infinitySlider.prototype.startAutoPlay = function () {
       function () {
         this.index++;
         this.index = this.index < this.slides.length ? this.index : 0;
-        this.rearangeLoop();
+        this.rearangeLoop(1);
       }.bind(this),
       this.options.autoplayTime * 1000
     );
@@ -125,7 +125,7 @@ infinitySlider.prototype.sendSlidesToBack = function () {
  * Prepares the slides for animated motion
  * @param {number} amount Number of slides to translate. A negative number means a backward motion.
  */
-infinitySlider.prototype.prepLoop = function (amount) {
+/*infinitySlider.prototype.prepLoop = function (amount) {
   this.disableAnimations();
   this.sendSlidesToBack();
   var dir = Math.sign(amount);
@@ -134,30 +134,60 @@ infinitySlider.prototype.prepLoop = function (amount) {
     var index = this.index + i;
     index = (index<this.slides.length) ? index : index - this.slides.length;
     index = (index < 0) ? this.slides.length + index : index;
-    this.slides[index].style.transform = "translateX("+ i * 100 + "%)";
+    this.slides[index].style.transform = "translateX("+ (i + this.options.slideOffset) * 100 +  "%)";
   }
   this.enableAnimations();
-};
+};*/
 
-infinitySlider.prototype.rearangeLoop = function () {
+infinitySlider.prototype.rearangeLoop = function (dir) {
+  var previndex = this.index - dir;
+  var amount = Math.abs(dir);
+  previndex = previndex < this.slides.length ? previndex : 0;
+  previndex = previndex < 0 ? this.slides.length - 1 : previndex;
   var loop = Math.ceil(this.slides.length / 2);
   loop = this.slides.length % 2 ? loop : loop + 1;
-  var next = this.index;
-  var prev = this.index;
+  var next = previndex;
+  var prev = previndex;
 
-  this.slides[this.index].style.transform = "translateX(0%)";
-  this.slides[this.index].style.zIndex = -1;
-
+  this.disableAnimations();
+  this.slides[previndex].style.zIndex = -1;
   for (var i = 1; i < loop; i++) {
     next++;
     next = next < this.slides.length ? next : 0;
     prev--;
     prev = prev < 0 ? this.slides.length - 1 : prev;
 
-    this.slides[next].style.transform = "translateX(" + i * 100 + "%)";
-    this.slides[next].style.zIndex = -i - 1;
-    this.slides[prev].style.transform = "translateX(" + -i * 100 + "%)";
-    this.slides[prev].style.zIndex = -i - 1;
+    this.slides[next].style.zIndex = (dir >= 0) ? -2 : -3;
+    this.slides[prev].style.zIndex = (dir >= 0) ? -3 : -2;
+
+    //slides are doubled so next==prev
+    if(i>=loop-amount && dir >= 0)
+    {
+      this.slides[prev].style.zIndex = -4;
+    }
+
+    //slides are doubled so next==prev
+    if(i>=loop-(amount+1) && dir < 0)
+    {
+      this.slides[next].style.zIndex = -4;
+    }
+  }
+
+  this.slides[this.index].style.zIndex = -1;
+  this.enableAnimations();
+
+  var next = this.index;
+  var prev = this.index;
+  this.slides[this.index].style.transform = "translateX(" + this.options.slideOffset * 100 + "%)";
+  
+  for (var i = 1; i < loop; i++) {
+    next++;
+    next = next < this.slides.length ? next : 0;
+    prev--;
+    prev = prev < 0 ? this.slides.length - 1 : prev;
+
+    this.slides[next].style.transform = "translateX(" + (i + this.options.slideOffset) * 100 + "%)";
+    this.slides[prev].style.transform = "translateX(" + -(i + this.options.slideOffset) * 100 + "%)";
   }
 
   this.updateDots();
@@ -175,7 +205,7 @@ infinitySlider.prototype.next = function () {
   this.stopAutoPlay();
   this.index++;
   this.index = this.index < this.slides.length ? this.index : 0;
-  this.rearangeLoop();
+  this.rearangeLoop(1);
   this.startAutoPlay();
 };
 
@@ -183,26 +213,35 @@ infinitySlider.prototype.prev = function () {
   this.stopAutoPlay();
   this.index--;
   this.index = this.index < 0 ? this.slides.length - 1 : this.index;
-  this.rearangeLoop();
+  this.rearangeLoop(-1);
   this.startAutoPlay();
 };
 
 infinitySlider.prototype.goto = function (index) {
-  this.prepLoop(index - this.index);
+  this.stopAutoPlay();
+  var motion = index - this.index;
+  //this.prepLoop(motion);
   this.index = index;
-  this.rearangeLoop();
-  this.updateDots();
+  this.rearangeLoop(motion);
+  this.startAutoPlay();
 };
 
 infinitySlider.prototype.defaultOptions = function (options) {
   var fulloptions = {
+    /**
+     * selectors
+     */
     sliderSelector: ".slider",
     slideSelector: ".slide",
     dotSelector: ".slidedot",
+    /**
+     * transitions and animations
+     */
     transitionTime: 0.5,
     transitionEasing: "ease-in-out",
     autoplay: true,
     autoplayTime: 5,
+    slideOffset: 0,
   };
 
   Object.getOwnPropertyNames(options).forEach(function (element) {
