@@ -116,28 +116,10 @@ infinitySlider.prototype.disableAnimations = function () {
 infinitySlider.prototype.sendSlidesToBack = function () {
   for (var i = 0; i < this.slides.length; i++) {
     if (i != this.index) {
-      this.slides[i].style.zIndex = -this.slides.length;
+      this.slides[i].style.zIndex = -1;
     }
   }
 };
-
-/**
- * Prepares the slides for animated motion
- * @param {number} amount Number of slides to translate. A negative number means a backward motion.
- */
-/*infinitySlider.prototype.prepLoop = function (amount) {
-  this.disableAnimations();
-  this.sendSlidesToBack();
-  var dir = Math.sign(amount);
-  amount += dir;
-  for (var i = 0; i != amount; i += dir) {
-    var index = this.index + i;
-    index = (index<this.slides.length) ? index : index - this.slides.length;
-    index = (index < 0) ? this.slides.length + index : index;
-    this.slides[index].style.transform = "translateX("+ (i + this.options.transformationOffset) * 100 +  "%)";
-  }
-  this.enableAnimations();
-};*/
 
 infinitySlider.prototype.rearangeLoop = function (dir) {
 
@@ -156,30 +138,30 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
   var prev = previndex;
 
   this.disableAnimations();
-  this.slides[previndex].style.zIndex = -2;
+  this.slides[previndex].style.zIndex = -1;
   for (var i = 1; i < loop; i++) {
     next++;
     next = next < this.slides.length ? next : 0;
     prev--;
     prev = prev < 0 ? this.slides.length - 1 : prev;
 
-    this.slides[next].style.zIndex = (dir >= 0) ? -2 : -3;
-    this.slides[prev].style.zIndex = (dir >= 0) ? -3 : -2;
+    this.slides[next].style.zIndex = (dir >= 0) ? -1 : -2;
+    this.slides[prev].style.zIndex = (dir >= 0) ? -2 : -1;
 
     //slides are doubled so next==prev
     if(i>=loop-amount && dir >= 0)
     {
-      this.slides[prev].style.zIndex = -4;
+      this.slides[prev].style.zIndex = -3;
     }
 
     //slides are doubled so next==prev
     if(i>=loop-(amount+1) && dir < 0)
     {
-      this.slides[next].style.zIndex = -4;
+      this.slides[next].style.zIndex = -3;
     }
   }
 
-  this.slides[this.index].style.zIndex = -1;
+  this.slides[this.index].style.zIndex = 0;
   this.enableAnimations();
 
   var next = this.index;
