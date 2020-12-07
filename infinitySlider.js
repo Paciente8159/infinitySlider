@@ -22,7 +22,7 @@ function infinitySlider(options) {
 
   this.activeSlide = this.slides[0];
   if (this.activeSlide) {
-    this.activeSlide.classList.add(this.options.slideActiveSelector);
+    this.activeSlide.classList.add(this.options.slideActiveClassName);
   }
 
   this.slidesdots = document.querySelectorAll(
@@ -31,7 +31,7 @@ function infinitySlider(options) {
 
   this.activeDot = this.slidesdots[0];
   if (this.activeDot) {
-    this.activeDot.classList.add(this.options.dotActiveSelector);
+    this.activeDot.classList.add(this.options.dotActiveClassName);
   }
 
   this.enableAnimations();
@@ -188,14 +188,14 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
 
 infinitySlider.prototype.updateActiveClasses = function () {
 
-  this.activeSlide.classList.remove(this.options.slideActiveSelector);
+  this.activeSlide.classList.remove(this.options.slideActiveClassName);
   this.activeSlide = this.slides[this.index];
-  this.activeSlide.classList.add(this.options.slideActiveSelector);
+  this.activeSlide.classList.add(this.options.slideActiveClassName);
 
   if (this.activeDot) {
-    this.activeDot.classList.remove(this.options.dotActiveSelector);
+    this.activeDot.classList.remove(this.options.dotActiveClassName);
     this.activeDot = this.slidesdots[this.index % this.slidesdots.length];
-    this.activeDot.classList.add(this.options.dotActiveSelector);
+    this.activeDot.classList.add(this.options.dotActiveClassName);
   }
 };
 
@@ -232,8 +232,8 @@ infinitySlider.prototype.defaultOptions = function (options) {
     sliderSelector: ".slider",
     slideSelector: ".slide",
     dotSelector: ".slidedot",
-    slideActiveSelector: ".slide-active",
-    dotActiveSelector: ".dot-active",
+    slideActiveClasseName: "slide-active",
+    dotActiveClasseName: "dot-active",
     /**
      * transitions and animations
      */
