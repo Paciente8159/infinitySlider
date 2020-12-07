@@ -20,13 +20,18 @@ function infinitySlider(options) {
     this.options.sliderSelector + ">" + this.options.slideSelector
   );
 
+  this.activeSlide = this.slides[0];
+  if (this.activeSlide) {
+    this.activeSlide.classList.add(this.options.slideActiveSelector);
+  }
+
   this.slidesdots = document.querySelectorAll(
     this.options.sliderSelector + ">" + this.options.dotSelector
   );
 
   this.activeDot = this.slidesdots[0];
   if (this.activeDot) {
-    this.activeDot.classList.add("active");
+    this.activeDot.classList.add(this.options.dotActiveSelector);
   }
 
   this.enableAnimations();
@@ -178,14 +183,19 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
     this.slides[prev].style.transform = f + "(" + (-i + o) * m +  u +")";
   }
 
-  this.updateDots();
+  this.updateActiveClasses();
 };
 
-infinitySlider.prototype.updateDots = function () {
+infinitySlider.prototype.updateActiveClasses = function () {
+
+  this.activeSlide.classList.remove(this.options.slideActiveSelector);
+  this.activeSlide = this.slidesdots[this.index];
+  this.activeSlide.classList.add(this.options.slideActiveSelector);
+
   if (this.activeDot) {
-    this.activeDot.classList.remove("active");
+    this.activeDot.classList.remove(this.options.dotActiveSelector);
     this.activeDot = this.slidesdots[this.index % this.slidesdots.length];
-    this.activeDot.classList.add("active");
+    this.activeDot.classList.add(this.options.dotActiveSelector);
   }
 };
 
@@ -222,6 +232,8 @@ infinitySlider.prototype.defaultOptions = function (options) {
     sliderSelector: ".slider",
     slideSelector: ".slide",
     dotSelector: ".slidedot",
+    slideActiveSelector: ".slide-active",
+    dotActiveSelector: ".dot-active",
     /**
      * transitions and animations
      */
