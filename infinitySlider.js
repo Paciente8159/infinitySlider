@@ -232,8 +232,8 @@ infinitySlider.prototype.defaultOptions = function (options) {
     sliderSelector: ".slider",
     slideSelector: ".slide",
     dotSelector: ".slidedot",
-    slideActiveClasseName: "slide-active",
-    dotActiveClasseName: "dot-active",
+    slideActiveClassName: "slide-active",
+    dotActiveClassName: "dot-active",
     /**
      * transitions and animations
      */
