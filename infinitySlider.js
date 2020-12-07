@@ -189,7 +189,7 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
 infinitySlider.prototype.updateActiveClasses = function () {
 
   this.activeSlide.classList.remove(this.options.slideActiveSelector);
-  this.activeSlide = this.slidesdots[this.index];
+  this.activeSlide = this.slides[this.index];
   this.activeSlide.classList.add(this.options.slideActiveSelector);
 
   if (this.activeDot) {
