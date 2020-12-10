@@ -239,6 +239,10 @@ infinitySlider.prototype.getAt = function (index) {
   return this.slides[index % this.slides.length];
 };
 
+infinitySlider.prototype.getIndex = function () {
+  return this.index;
+};
+
 infinitySlider.prototype.defaultOptions = function (options) {
   var fulloptions = {
     /**
