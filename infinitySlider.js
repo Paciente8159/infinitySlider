@@ -12,8 +12,10 @@ function infinitySlider(options) {
     return;
   }
 
-  for (var i = 0; i < this.slides.length; i++) {
-    this.slider.insertBefore(this.slides[i].cloneNode(true), this.slides[0]);
+  if (this.options.enableSlideLoop) {
+    for (var i = 0; i < this.slides.length; i++) {
+      this.slider.insertBefore(this.slides[i].cloneNode(true), this.slides[0]);
+    }
   }
 
   this.slides = document.querySelectorAll(
@@ -88,7 +90,7 @@ infinitySlider.prototype.activateSlide = function (element) {
     }
   }
 
-  this.goto(selected);
+  this.goTo(selected);
 };
 
 infinitySlider.prototype.startAutoPlay = function () {
@@ -112,17 +114,17 @@ infinitySlider.prototype.stopAutoPlay = function () {
 
 infinitySlider.prototype.enableAnimations = function () {
   for (var i = 0; i < this.slides.length; i++) {
-    this.slides[i].style.transition =
+    this.slides[i].style.transition = ""/*
       "transform " +
       this.options.transitionTime +
       "s " +
-      this.options.transitionEasing;
+      this.options.transitionEasing*/;
   }
 };
 
 infinitySlider.prototype.disableAnimations = function () {
   for (var i = 0; i < this.slides.length; i++) {
-    this.slides[i].style.transitionTime = "";
+    this.slides[i].style.transition = "initial";
   }
 };
 
@@ -134,10 +136,10 @@ infinitySlider.prototype.sendSlidesToBack = function () {
   }
 };
 
-infinitySlider.prototype.rearangeLoop = function (dir) {
+infinitySlider.prototype.rearangeLoop = function (dir, imediate) {
   var f = this.options.transformationFunc;
   var o = this.options.transformationOffset;
-  var m = this.options.transformationStep;
+  var m = 100 * this.options.transformationMult;
   var u = this.options.transformationUnits;
 
   var previndex = this.index - dir;
@@ -151,40 +153,50 @@ infinitySlider.prototype.rearangeLoop = function (dir) {
 
   this.disableAnimations();
   this.slides[previndex].style.zIndex = -1;
-  for (var i = 1; i < loop; i++) {
-    next++;
-    next = next < this.slides.length ? next : 0;
-    prev--;
-    prev = prev < 0 ? this.slides.length - 1 : prev;
+  if (this.options.enableSlideLoop) {
+    for (var i = 1; i < loop; i++) {
+      next++;
+      next = next < this.slides.length ? next : 0;
+      prev--;
+      prev = prev < 0 ? this.slides.length - 1 : prev;
 
-    this.slides[next].style.zIndex = dir >= 0 ? -1 : -2;
-    this.slides[prev].style.zIndex = dir >= 0 ? -2 : -1;
+      this.slides[next].style.zIndex = dir >= 0 ? -1 : -2;
+      this.slides[prev].style.zIndex = dir >= 0 ? -2 : -1;
 
-    //slides are doubled so next==prev
-    if (i >= loop - amount && dir >= 0) {
-      this.slides[prev].style.zIndex = -3;
-    }
+      //slides are doubled so next==prev
+      if (i >= loop - amount && dir >= 0) {
+        this.slides[prev].style.zIndex = -3;
+      }
 
-    //slides are doubled so next==prev
-    if (i >= loop - (amount + 1) && dir < 0) {
-      this.slides[next].style.zIndex = -3;
+      //slides are doubled so next==prev
+      if (i >= loop - (amount + 1) && dir < 0) {
+        this.slides[next].style.zIndex = -3;
+      }
     }
   }
 
   this.slides[this.index].style.zIndex = 0;
-  this.enableAnimations();
+  if (!imediate) {
+    this.enableAnimations();
+  }
   var next = this.index;
   var prev = this.index;
-  this.slides[this.index].style.transform = f + "(" + o * m + u + ")";
+  if (this.options.enableSlideLoop) {
+    this.slides[this.index].style.transform = f + "(" + o * m + u + ")";
+    for (var i = 1; i < loop; i++) {
+      next++;
+      next = next < this.slides.length ? next : 0;
+      prev--;
+      prev = prev < 0 ? this.slides.length - 1 : prev;
 
-  for (var i = 1; i < loop; i++) {
-    next++;
-    next = next < this.slides.length ? next : 0;
-    prev--;
-    prev = prev < 0 ? this.slides.length - 1 : prev;
-
-    this.slides[next].style.transform = f + "(" + (i + o) * m + u + ")";
-    this.slides[prev].style.transform = f + "(" + (-i + o) * m + u + ")";
+      this.slides[next].style.transform = f + "(" + (i + o) * m + u + ")";
+      this.slides[prev].style.transform = f + "(" + (-i + o) * m + u + ")";
+    }
+  } else {
+    for (var i = 0; i < this.slides.length; i++) {
+      var j = i - this.index;
+      this.slides[i].style.transform = f + "(" + (j + o) * m + u + ")";
+    }
   }
   this.updateActiveClasses();
 };
@@ -203,7 +215,11 @@ infinitySlider.prototype.updateActiveClasses = function () {
 
 infinitySlider.prototype.next = function () {
   this.stopAutoPlay();
-  if (this.index < this.slides.length / 2 - 1 || this.options.enableLooping) {
+  var max_slides = this.options.enableSlideLoop
+    ? this.slides.length / 2
+    : this.slides.length;
+
+  if (this.index < max_slides - 1 || this.options.enableSlideLoop) {
     this.index++;
   }
   this.index = this.index < this.slides.length ? this.index : 0;
@@ -213,7 +229,7 @@ infinitySlider.prototype.next = function () {
 
 infinitySlider.prototype.prev = function () {
   this.stopAutoPlay();
-  if (this.index != 0 || this.options.enableLooping) {
+  if (this.index != 0 || this.options.enableSlideLoop) {
     this.index--;
   }
   this.index = this.index < 0 ? this.slides.length - 1 : this.index;
@@ -221,10 +237,13 @@ infinitySlider.prototype.prev = function () {
   this.startAutoPlay();
 };
 
-infinitySlider.prototype.goto = function (index) {
+infinitySlider.prototype.goTo = function (index) {
   this.stopAutoPlay();
-  if (!this.options.enableLooping) {
-    if (index >= this.slides.length / 2 || index < 0) {
+  var max_slides = this.options.enableSlideLoop
+    ? this.slides.length / 2
+    : this.slides.length;
+  if (!this.options.enableSlideLoop) {
+    if (index >= max_slides || index < 0) {
       return;
     }
   }
@@ -232,6 +251,23 @@ infinitySlider.prototype.goto = function (index) {
   //this.prepLoop(motion);
   this.index = index;
   this.rearangeLoop(motion);
+  this.startAutoPlay();
+};
+
+infinitySlider.prototype.jumpTo = function (index) {
+  this.stopAutoPlay();
+  var max_slides = this.options.enableSlideLoop
+    ? this.slides.length / 2
+    : this.slides.length;
+  if (!this.options.enableSlideLoop) {
+    if (index >= max_slides || index < 0) {
+      return;
+    }
+  }
+  var motion = index - this.index;
+  //this.prepLoop(motion);
+  this.index = index;
+  this.rearangeLoop(motion,true);
   this.startAutoPlay();
 };
 
@@ -254,20 +290,18 @@ infinitySlider.prototype.defaultOptions = function (options) {
     slideActiveClassName: "slide-active",
     dotActiveClassName: "dot-active",
     /**
-     * transitions and animations
+     * autoplay and transformations
      */
-    transitionTime: 0.5,
-    transitionEasing: "ease-in-out",
-    autoplay: true,
+    autoplay: false,
     autoplayTime: 5,
     transformationOffset: 0,
     transformationFunc: "translateX",
-    transformationStep: 100,
+    transformationMult: 1,
     transformationUnits: "%",
     /**
      * functionalities
      */
-    enableLooping: true,
+    enableSlideLoop: false,
   };
 
   Object.getOwnPropertyNames(options).forEach(function (element) {
