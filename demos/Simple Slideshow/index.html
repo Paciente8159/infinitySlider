@@ -1,0 +1,45 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../../infinitySlider.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="slider">
+        <div class="slide bg1"></div>
+        <input type="button" class="slidedot" onclick="myslider.activateSlide(this);">
+
+        <div class="slide bg2"></div>
+        <input type="button" class="slidedot" onclick="myslider.activateSlide(this);">
+
+        <div class="slide bg3"></div>
+        <input type="button" class="slidedot" onclick="myslider.activateSlide(this);">
+
+        <div class="slide bg4"></div>
+        <input type="button" class="slidedot" onclick="myslider.activateSlide(this);">
+
+        <div class="slide bg5"></div>
+        <input type="button" class="slidedot" onclick="myslider.activateSlide(this);">
+
+        <button class="slider-control slider-prev" onclick="myslider.prev();">
+            <div></div>
+        </button>
+        <button class="slider-control slider-next" onclick="myslider.next();">
+            <div></div>
+        </button>
+    </div>
+    <script>
+        var myslider = null;
+        document.addEventListener("DOMContentLoaded", function (event) {
+            myslider = new infinitySlider({
+            });
+        });
+
+    </script>
+</body>
+
+</html>

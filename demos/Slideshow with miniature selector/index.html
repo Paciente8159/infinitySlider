@@ -1,0 +1,56 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="../../infinitySlider.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="slider">
+        <div class="slide bg1"></div>
+        <div class="slide bg2"></div>
+        <div class="slide bg3"></div>
+        <div class="slide bg4"></div>
+        <div class="slide bg5"></div>
+        <button class="slider-control slider-prev" onclick="myminislider.prev();">
+            <div></div>
+        </button>
+        <button class="slider-control slider-next" onclick="myminislider.next();">
+            <div></div>
+        </button>
+    </div>
+    <div class="miniatureslider">
+        <div class="minislide bg1" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg2" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg3" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg4" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg5" onclick="myminislider.activateSlide(this);"></div>
+    </div>
+    <script>
+        var myslider = null;
+        var myminiatureslider = null;
+        document.addEventListener("DOMContentLoaded", function (event) {
+            myslider = new infinitySlider({
+                enableSlideLoop: true, /*enables slide looping*/
+                /* do not enable autoplay. minislider will control this*/
+            });
+
+            myminislider = new infinitySlider({
+                sliderSelector: '.miniatureslider',
+                slideSelector: '.minislide',
+                transformationOffset: 2,
+                enableSlideLoop: true, /*enables slide looping*/
+                autoplay: false, /*enables autoplay*/
+                autoplayTime: 4, /*switches slide every 4 seconds*/
+                onSlideChange: function(index){
+                    myslider.goTo(index);
+                }, /*runs the Slide change callback to sync sliders*/
+            });
+        });
+    </script>
+</body>
+
+</html>

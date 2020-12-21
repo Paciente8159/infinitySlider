@@ -199,6 +199,10 @@ infinitySlider.prototype.rearangeLoop = function (dir, imediate) {
     }
   }
   this.updateActiveClasses();
+
+  if(this.options.onSlideChange){
+    this.options.onSlideChange(this.index);
+  }
 };
 
 infinitySlider.prototype.updateActiveClasses = function () {
@@ -302,6 +306,10 @@ infinitySlider.prototype.defaultOptions = function (options) {
      * functionalities
      */
     enableSlideLoop: false,
+    /**
+     * Callbacks
+     */
+    onSlideChange: null,
   };
 
   Object.getOwnPropertyNames(options).forEach(function (element) {
