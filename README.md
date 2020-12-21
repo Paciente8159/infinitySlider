@@ -2,6 +2,10 @@
 
 A js library to create and control an slider/carousel element. This library only provides the sliding mechanics for the slider so any styling and css can be done and shoud be done by the user.
 
+## infinitySlider dependencies
+
+infinitySlider now uses [transitionJS](https://github.com/Paciente8159/transitionJS) to render transition effects.
+
 ## infinitySlider options
 
 infinitySlider has the following option
@@ -13,10 +17,16 @@ infinitySlider has the following option
   - slideActiveClassName - `Type: string (default slide-active)` This is the class that will be added to a slide when it is active.
   - dotActiveClassName - `Type: string (default dot-active)` This is the class that will be added to a dot control when it is active.
 - Autoplay and transformations
+  - transitionTime - `Type: number (default 500)` This is the number of milliseconds for the transition effect.
+  - transitionEasing - `Type: string|function (default easeInOutCubic)` This is the easing function used for the transition. Read [transitionJS](https://github.com/Paciente8159/transitionJS)
+ about easing functions.
   - autoplay - `Type: boolean (default false)` This enables or disables autoplay.
-  - autoplayTime - `Type: number (default 5)` This is the number of seconds between each slide transition.
+  - autoplayTime - `Type: number (default 5000)` This is the number of milliseconds between each slide transition.
   - transformationOffset - `Type: number (default 0)` This is an offset aplied to the slides position. A value a one represents 100% (one slide offset). 0.5 represents 50% slide offset.
-  - transformationFunc - `Type: string (default translateX)` This is CSS transform effect to be applied.
+  - transformationFunc - `Type: string|function (default translateX)` This is CSS transform effect to be applied. A custom function can be defined. If a function is defined transformationMult and transformationUnits are ignored. This function will receive following arguments:
+    - `Type: object` the slide DOM element
+    - `Type: number` the slide position with the offset. This value is a fractional number relative to the slider. 0 means in the middle/front of the slider frame. -1 is one slide before. 0.5 is half slide after the frame. etc... This is the slide overall position relative to the slider frame.
+    - `Type: number Range(0-1)` render animation progress from the render function. 
   - transformationMult - `Type: number (default 100)` This is the corresponding multiplier to be aplied. The transformation will be calculated from 0 to 1. This multiplier will be used in conjuntion with the transformationUnits options to calculate the effect variation. For example to make a full X translation with a transformationFunc with value translateX, a transformationMult of 100 and a transformationUnits of '%' should be used (100% is a full translation of a slide). For a rotate transform transformationFunc rotate, a transformationMult of 360 and a transformationUnits of 'deg' should be used (360deg is a full rotation of a slide).
   - transformationUnits - `Type: string (default %)` Chech the previous description.
 - Functionalities
