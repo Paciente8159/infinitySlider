@@ -33,7 +33,8 @@ infinitySlider has the following option
   - enableSlideLoop - `Type: boolean (default false)` This enables/improves slide looping effect by modifind the DOM adding a clone of the slides structure to the loop.
   - debug - `Type: boolean (default false)` This enables debugging option to see the effect running (zoom out the slides inside the slider).
 - Callbacks
-  - onSlideChange - `Type: function (default null)` If defined this function will be called after the transition has ended.
+  - onBeforeSlideChange - `Type: function (default null)` If defined this function will be called before the transition has started.
+  - onAfterSlideChange - `Type: function (default null)` If defined this function will be called after the transition has ended.
 
 ## infinitySlider exemples
 
