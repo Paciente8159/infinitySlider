@@ -50,9 +50,11 @@ function infinitySlider(options) {
     this.options.sliderSelector + ">" + this.options.dotSelector
   );
 
-  this.activeDot = this.slidesdots[0];
-  if (this.activeDot) {
-    this.activeDot.classList.add(this.options.dotActiveClassName);
+  if (this.slidesdots.length) {
+    this.activeDot = this.slidesdots[0];
+    if (this.activeDot) {
+      this.activeDot.classList.add(this.options.dotActiveClassName);
+    }
   }
 
   if (this.options.debug) {
@@ -67,7 +69,7 @@ function infinitySlider(options) {
         perc /= this.slides.length;
         param = "height:" + perc + "%;margin-top:auto;margin-bottom:auto;";
         break;
-      default: 
+      default:
         perc /= this.slides.length;
         param = "width:" + perc + "%;margin-left:auto;margin-right:auto;";
         perc /= this.slides.length;
@@ -77,7 +79,7 @@ function infinitySlider(options) {
     this.slider.style.cssText = "position:relative;overflow:visible;" + param;
   }
 
-  this.render(1,1);
+  this.render(1, 1);
   this.autoplayInterval = null;
   this.startAutoPlay();
 }
@@ -105,21 +107,18 @@ infinitySlider.prototype.render = function (realposition, frameposition) {
     : this.slides.length;
 
   for (var i = 0; i != this.slides.length; i++) {
-    var offset = this.slidesoffsets[i] - (this.motion * frameposition);
-    if(offset>mid_point){
+    var offset = this.slidesoffsets[i] - this.motion * frameposition;
+    if (offset > mid_point) {
       offset -= this.slides.length;
-    }
-    else if(this.slidesoffsets[i]<-mid_point){
+    } else if (this.slidesoffsets[i] < -mid_point) {
       offset += this.slides.length;
     }
 
     this.slides[i].style.zIndex = -Math.round(Math.abs(offset));
     var k = offset + o;
-    if(typeof(f)==="string")
-    {
+    if (typeof f === "string") {
       this.slides[i].style.transform = f + "(" + k * m + u + ")";
-    }
-    else{
+    } else {
       f(this.slides[i], k, frameposition);
     }
 
@@ -132,7 +131,7 @@ infinitySlider.prototype.render = function (realposition, frameposition) {
 
   if (frameposition >= 1) {
     this.index += this.motion;
-    this.index = this.index % mid_point;
+    this.index = this.index % this.slides.length;
     this.motion = 0;
     this.lastframe = 0;
     this.updateActiveClasses();
@@ -140,9 +139,8 @@ infinitySlider.prototype.render = function (realposition, frameposition) {
       this.slides[i].style.zIndex = 0;
     }
 
-    if(this.options.onSlideChange)
-    {
-      this.options.onSlideChange(this.index);
+    if (this.options.onAfterSlideChange) {
+      this.options.onAfterSlideChange(this.index);
     }
   }
 };
@@ -200,11 +198,15 @@ infinitySlider.prototype.stopAutoPlay = function () {
 };
 
 infinitySlider.prototype.updateActiveClasses = function () {
-  this.activeSlide.classList.remove(this.options.slideActiveClassName);
-  this.activeSlide = this.slides[this.index];
-  this.activeSlide.classList.add(this.options.slideActiveClassName);
+  if (this.activeSlide) {
+    this.activeSlide.classList.remove(this.options.slideActiveClassName);
+  }
+  this.activeSlide = this.slides[Math.round(this.index)];
+  if (this.activeSlide) {
+    this.activeSlide.classList.add(this.options.slideActiveClassName);
+  }
 
-  if (this.activeDot) {
+  if (this.slidesdots.length) {
     this.activeDot.classList.remove(this.options.dotActiveClassName);
     this.activeDot = this.slidesdots[this.index % this.slidesdots.length];
     this.activeDot.classList.add(this.options.dotActiveClassName);
@@ -214,6 +216,9 @@ infinitySlider.prototype.updateActiveClasses = function () {
 infinitySlider.prototype.next = function () {
   this.stopAutoPlay();
   this.motion++;
+  if (this.options.onBeforeSlideChange) {
+    this.options.onBeforeSlideChange(this.index, this.motion);
+  }
   this.transition.startTransition();
   this.startAutoPlay();
 };
@@ -221,6 +226,9 @@ infinitySlider.prototype.next = function () {
 infinitySlider.prototype.prev = function () {
   this.stopAutoPlay();
   this.motion--;
+  if (this.options.onBeforeSlideChange) {
+    this.options.onBeforeSlideChange(this.index, this.motion);
+  }
   this.transition.startTransition();
   this.startAutoPlay();
 };
@@ -228,11 +236,18 @@ infinitySlider.prototype.prev = function () {
 infinitySlider.prototype.goTo = function (index) {
   this.stopAutoPlay();
   this.motion = index - this.index;
-  if (this.enableSlideLoop && Math.abs(this.motion) > this.slides.length / 2) {
+  if (
+    this.options.enableSlideLoop &&
+    Math.abs(this.motion) > this.slides.length / 2
+  ) {
     this.motion =
       this.motion < 0
         ? this.slides.length + this.motion
         : -(this.slides.length - this.motion);
+  }
+
+  if (this.options.onBeforeSlideChange) {
+    this.options.onBeforeSlideChange(this.index, this.motion);
   }
   this.transition.startTransition();
   this.startAutoPlay();
@@ -248,7 +263,7 @@ infinitySlider.prototype.jumpTo = function (index) {
       return;
     }
   }
-  this.motion += (index - this.index);
+  this.motion += index - this.index;
   this.transition.startTransition();
   this.startAutoPlay();
 };
@@ -289,7 +304,8 @@ infinitySlider.prototype.defaultOptions = function (options) {
     /**
      * Callbacks
      */
-    onSlideChange: null,
+    onBeforeSlideChange: null,
+    onAfterSlideChange: null,
   };
 
   Object.getOwnPropertyNames(options).forEach(function (element) {

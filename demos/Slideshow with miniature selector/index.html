@@ -25,11 +25,11 @@
         </button>
     </div>
     <div class="miniatureslider">
-        <div class="minislide bg1" onclick="myminislider.activateSlide(this);myslider.goTo(myminislider.getSlideIndex(this));"></div>
-        <div class="minislide bg2" onclick="myminislider.activateSlide(this);myslider.goTo(myminislider.getSlideIndex(this));"></div>
-        <div class="minislide bg3" onclick="myminislider.activateSlide(this);myslider.goTo(myminislider.getSlideIndex(this));"></div>
-        <div class="minislide bg4" onclick="myminislider.activateSlide(this);myslider.goTo(myminislider.getSlideIndex(this));"></div>
-        <div class="minislide bg5" onclick="myminislider.activateSlide(this);myslider.goTo(myminislider.getSlideIndex(this));"></div>
+        <div class="minislide bg1" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg2" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg3" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg4" onclick="myminislider.activateSlide(this);"></div>
+        <div class="minislide bg5" onclick="myminislider.activateSlide(this);"></div>
     </div>
     <script>
         var myslider = null;
@@ -47,6 +47,9 @@
                 enableSlideLoop: true, /*enables slide looping*/
                 autoplay: false, /*enables autoplay*/
                 autoplayTime: 4000, /*switches slide every 4 seconds*/
+                onBeforeSlideChange: function(index, motion){
+                    myslider.goTo(index + motion);
+                }
             });
         });
     </script>
