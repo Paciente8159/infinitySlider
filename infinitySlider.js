@@ -207,9 +207,13 @@ infinitySlider.prototype.updateActiveClasses = function () {
   }
 
   if (this.slidesdots.length) {
-    this.activeDot.classList.remove(this.options.dotActiveClassName);
+    if (this.activeDot) {
+      this.activeDot.classList.remove(this.options.dotActiveClassName);
+    }
     this.activeDot = this.slidesdots[this.index % this.slidesdots.length];
-    this.activeDot.classList.add(this.options.dotActiveClassName);
+    if (this.activeDot) {
+      this.activeDot.classList.add(this.options.dotActiveClassName);
+    }
   }
 };
 
