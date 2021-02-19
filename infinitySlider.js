@@ -19,11 +19,6 @@ function infinitySlider(options) {
 
   this.slides = this.slider.querySelectorAll(this.options.slideSelector);
 
-  //no slides nothing to do
-  if (!this.slides) {
-    return;
-  }
-
   if (this.options.enableSlideLoop) {
     for (var i = 0; i < this.slides.length; i++) {
       this.slider.insertBefore(this.slides[i].cloneNode(true), this.slides[0]);
@@ -32,9 +27,11 @@ function infinitySlider(options) {
 
   this.slides = this.slider.querySelectorAll(this.options.slideSelector);
 
-  this.activeSlide = this.slides[0];
-  if (this.activeSlide) {
-    this.activeSlide.classList.add(this.options.slideActiveClassName);
+  if (this.slides.length) {
+    this.activeSlide = this.slides[0];
+    if (this.activeSlide) {
+      this.activeSlide.classList.add(this.options.slideActiveClassName);
+    }
   }
 
   this.slidesdots = this.slider.querySelectorAll(this.options.dotSelector);
@@ -62,6 +59,10 @@ function infinitySlider(options) {
 }
 
 infinitySlider.prototype.normIndex = function (i) {
+  if (!this.slides.length) {
+    return 0;
+  }
+
   while (i < 0) {
     i += this.slides.length;
   }
