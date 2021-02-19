@@ -9,9 +9,7 @@ function infinitySlider(options) {
   });
 
   this.index = 0;
-  this.targetindex = 0;
-  this.renderindex;
-
+  this.motionAmount = 0;
   this.slider = document.querySelector(this.options.sliderSelector);
 
   //no slider nothing to do
@@ -80,10 +78,9 @@ infinitySlider.prototype.render = function (realposition, frameposition) {
   var o = this.options.transformationOffset;
   var m = 100 * this.options.transformationMult;
   var u = this.options.transformationUnits;
-  var curpos = this.calcMotion() * frameposition + o;
+  var curpos = this.motionAmount * frameposition + o;
 
-  this.offsetRenderIndex(curpos);
-  var offsets = this.getOffsetMap();
+  var offsets = this.getOffsetMap(curpos);
 
   var mid_point = this.options.enableSlideLoop
     ? this.slides.length / 2
@@ -97,11 +94,9 @@ infinitySlider.prototype.render = function (realposition, frameposition) {
     }
   }
 
-  curpos = Math.round(curpos);
-
   if (frameposition >= 1) {
-    this.index = this.targetindex;
-    this.renderindex = this.targetindex;
+    this.index = this.normIndex(this.index + this.motionAmount);
+    this.motionAmount = 0;
     this.updateActiveClasses();
     if (this.options.onAfterSlideChange) {
       this.options.onAfterSlideChange(this.index);
@@ -132,24 +127,22 @@ infinitySlider.prototype.getSlideIndex = function (element) {
 };
 
 infinitySlider.prototype.activateSlide = function (e) {
-  var element = e.srcElement;
-  var selected = this.getDotIndex(element);
-  if (selected < 0) {
-    selected = this.getSlideIndex(element);
-    if (selected < 0) {
+  var selectedIndex = this.getDotIndex(e);
+  if (selectedIndex < 0) {
+    selectedIndex = this.getSlideIndex(e);
+    if (selectedIndex < 0) {
       return;
     }
   }
 
-  this.goTo(selected);
+  this.move(selectedIndex - this.index);
 };
 
 infinitySlider.prototype.startAutoPlay = function () {
   if (this.options.autoplay) {
     this.autoplayInterval = setInterval(
       function () {
-        this.index = this.renderindex;
-        this.targetindex = this.normIndex(this.targetindex + 1);
+        this.motionAmount = this.options.transformationJump;
         this.transition.startTransition();
       }.bind(this),
       this.options.autoplayTime
@@ -183,6 +176,26 @@ infinitySlider.prototype.updateActiveClasses = function () {
   }
 };
 
+infinitySlider.prototype.move = function (amount) {
+  //transition already in play (leave)
+  if (this.transition.isRunning()) {
+    return;
+  }
+
+  //restart autoplay to prevent possible retriggering
+  this.stopAutoPlay();
+  //calculated the next target
+  this.motionAmount = amount;
+  //if a callback is set to onBeforeSlideChange fires it
+  if (this.options.onBeforeSlideChange) {
+    this.options.onBeforeSlideChange(this.index, this.motionAmount);
+  }
+  //starts the transition
+  this.transition.startTransition();
+  //reenables autoplay
+  this.startAutoPlay();
+};
+
 infinitySlider.prototype.next = function () {
   if (!this.options.enableSlideLoop) {
     if (this.index >= this.slides.length - 1) {
@@ -190,16 +203,7 @@ infinitySlider.prototype.next = function () {
     }
   }
 
-  this.stopAutoPlay();
-  this.index = this.renderindex;
-  this.targetindex = this.normIndex(
-    this.targetindex + this.options.transformationJump
-  );
-  if (this.options.onBeforeSlideChange) {
-    this.options.onBeforeSlideChange(this.index, this.calcMotion());
-  }
-  this.transition.startTransition();
-  this.startAutoPlay();
+  this.move(this.options.transformationJump);
 };
 
 infinitySlider.prototype.prev = function () {
@@ -209,38 +213,17 @@ infinitySlider.prototype.prev = function () {
     }
   }
 
-  this.stopAutoPlay();
-  this.index = this.renderindex;
-  this.targetindex = this.normIndex(
-    this.targetindex - this.options.transformationJump
-  );
-  if (this.options.onBeforeSlideChange) {
-    this.options.onBeforeSlideChange(this.index, this.calcMotion());
-  }
-  this.transition.startTransition();
-  this.startAutoPlay();
+  this.move(-this.options.transformationJump);
 };
 
-infinitySlider.prototype.goTo = function (index) {
-  this.stopAutoPlay();
-  this.index = this.renderindex;
-  this.targetindex = this.normIndex(index);
-
-  if (this.options.onBeforeSlideChange) {
-    this.options.onBeforeSlideChange(this.index, this.calcMotion());
-  }
-  this.transition.startTransition();
-  this.startAutoPlay();
-};
-
-infinitySlider.prototype.getAt = function (index) {
+infinitySlider.prototype.getSlideAt = function (index) {
   while (index < 0) {
     index += this.slides.length;
   }
   return this.slides[index % this.slides.length];
 };
 
-infinitySlider.prototype.dotGetAt = function (index) {
+infinitySlider.prototype.getDotAt = function (index) {
   while (index < 0) {
     index += this.slidesdots.length;
   }
@@ -251,23 +234,14 @@ infinitySlider.prototype.getIndex = function () {
   return this.index;
 };
 
-infinitySlider.prototype.offsetRenderIndex = function (offset) {
-  this.renderindex = this.index + offset;
-
-  if (this.renderindex > this.slides.length) {
-    this.renderindex -= this.slides.length;
-  } else if (this.renderindex < 0) {
-    this.renderindex += this.slides.length;
-  }
-};
-
-infinitySlider.prototype.getOffsetMap = function () {
+infinitySlider.prototype.getOffsetMap = function (offset) {
+  var renderIndex = this.normIndex(this.index + offset);
   var mid_point = this.options.enableSlideLoop
     ? this.slides.length / 2
     : this.slides.length;
   var offsets = new Array(this.slides.length);
   for (var i = 0; i < this.slides.length; i++) {
-    offsets[i] = i - this.renderindex;
+    offsets[i] = i - renderIndex;
     if (offsets[i] > mid_point) {
       offsets[i] += -this.slides.length;
     } else if (offsets[i] < -mid_point) {
@@ -276,21 +250,6 @@ infinitySlider.prototype.getOffsetMap = function () {
   }
 
   return offsets;
-};
-
-infinitySlider.prototype.calcMotion = function () {
-  var motion = this.targetindex - this.index;
-  var mid_point = this.options.enableSlideLoop
-    ? this.slides.length / 2
-    : this.slides.length;
-
-  if (motion > mid_point) {
-    return motion - this.slides.length;
-  } else if (motion < -mid_point) {
-    return motion + this.slides.length;
-  }
-
-  return motion;
 };
 
 infinitySlider.prototype.addSlide = function (
@@ -329,6 +288,19 @@ infinitySlider.prototype.addSlide = function (
   this.render(1, 1);
 };
 
+infinitySlider.prototype.changeOptions = function (newOptions) {
+  var fulloptions = this.options;
+
+  Object.getOwnPropertyNames(newOptions).forEach(function (element) {
+    Object.defineProperty(fulloptions, element, {
+      value: newOptions[element],
+      writable: true,
+    });
+  });
+
+  this.options = fulloptions;
+};
+
 infinitySlider.prototype.defaultOptions = function (options) {
   var fulloptions = {
     /**
@@ -343,7 +315,7 @@ infinitySlider.prototype.defaultOptions = function (options) {
      * autoplay and transformations
      */
     transitionTime: 500,
-    transitionEasing: "easeInOutCubic",
+    transitionEasing: null,
     autoplay: false,
     autoplayTime: 5000,
     transformationOffset: 0,
