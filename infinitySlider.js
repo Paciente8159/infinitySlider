@@ -14,9 +14,12 @@ function infinitySlider(options) {
 
   this.slider = document.querySelector(this.options.sliderSelector);
 
-  this.slides = document.querySelectorAll(
-    this.options.sliderSelector + ">" + this.options.slideSelector
-  );
+  //no slider nothing to do
+  if (!this.slider) {
+    return;
+  }
+
+  this.slides = this.slider.querySelectorAll(this.options.slideSelector);
 
   //no slides nothing to do
   if (!this.slides) {
@@ -29,18 +32,14 @@ function infinitySlider(options) {
     }
   }
 
-  this.slides = document.querySelectorAll(
-    this.options.sliderSelector + ">" + this.options.slideSelector
-  );
+  this.slides = this.slider.querySelectorAll(this.options.slideSelector);
 
   this.activeSlide = this.slides[0];
   if (this.activeSlide) {
     this.activeSlide.classList.add(this.options.slideActiveClassName);
   }
 
-  this.slidesdots = document.querySelectorAll(
-    this.options.sliderSelector + ">" + this.options.dotSelector
-  );
+  this.slidesdots = this.slider.querySelectorAll(this.options.dotSelector);
 
   if (this.slidesdots.length) {
     for (var i = 0; i < this.slidesdots.length; i++) {
@@ -65,12 +64,12 @@ function infinitySlider(options) {
 }
 
 infinitySlider.prototype.normIndex = function (i) {
-  if (i < 0) {
-    return this.slides.length + i;
+  while (i < 0) {
+    i += this.slides.length;
   }
 
-  if (i > this.slides.length - 1) {
-    return i - this.slides.length;
+  while (i > this.slides.length - 1) {
+    i -= this.slides.length;
   }
 
   return i;
@@ -193,7 +192,9 @@ infinitySlider.prototype.next = function () {
 
   this.stopAutoPlay();
   this.index = this.renderindex;
-  this.targetindex = this.normIndex(this.targetindex + 1);
+  this.targetindex = this.normIndex(
+    this.targetindex + this.options.transformationJump
+  );
   if (this.options.onBeforeSlideChange) {
     this.options.onBeforeSlideChange(this.index, this.calcMotion());
   }
@@ -210,7 +211,9 @@ infinitySlider.prototype.prev = function () {
 
   this.stopAutoPlay();
   this.index = this.renderindex;
-  this.targetindex = this.normIndex(this.targetindex - 1);
+  this.targetindex = this.normIndex(
+    this.targetindex - this.options.transformationJump
+  );
   if (this.options.onBeforeSlideChange) {
     this.options.onBeforeSlideChange(this.index, this.calcMotion());
   }
@@ -231,7 +234,17 @@ infinitySlider.prototype.goTo = function (index) {
 };
 
 infinitySlider.prototype.getAt = function (index) {
+  while (index < 0) {
+    index += this.slides.length;
+  }
   return this.slides[index % this.slides.length];
+};
+
+infinitySlider.prototype.dotGetAt = function (index) {
+  while (index < 0) {
+    index += this.slidesdots.length;
+  }
+  return this.slidesdots[index % this.slidesdots.length];
 };
 
 infinitySlider.prototype.getIndex = function () {
@@ -280,31 +293,40 @@ infinitySlider.prototype.calcMotion = function () {
   return motion;
 };
 
-infinitySlider.prototype.addSlide = function (slide, dot) {
-  var lastslide = this.slides[this.slides.length - 1];
-  if (slide) {
-    this.slider.insertBefore(slide, lastslide.nextSibling);
-    this.slides.push(slide);
+infinitySlider.prototype.addSlide = function (
+  newslide,
+  newdot = null,
+  insertAt = -1
+) {
+  if (!newslide || !this.slider) {
+    return;
   }
-  if (dot) {
-    this.slidesdots.push(dot);
-  }
+
+  //index of first slide/dot
+  insertAt = this.enableSlideLoop
+    ? insertAt % (this.slides.length / 2)
+    : insertAt % this.slides.length;
 
   //loop is active so a duplicate node must be added in the middle of the loop
   if (this.enableSlideLoop) {
-    var midslide = this.slides[this.slides.length / 2];
-    this.slider.insertBefore(slide, midslide);
+    var endslide = this.slides[insertAt + this.slides.length / 2];
+    this.slider.insertBefore(newslide, endslide);
   }
 
+  var refslide = insertAt >= 0 ? this.slides[insertAt] : null;
+  this.slider.insertBefore(newslide, refslide);
   //rebuild array
-  this.slides = document.querySelectorAll(
-    this.options.sliderSelector + ">" + this.options.slideSelector
-  );
-  if (dot) {
-    this.slidesdots = document.querySelectorAll(
-      this.options.sliderSelector + ">" + this.options.dotSelector
-    );
+  this.slides = this.slider.querySelectorAll(this.options.slideSelector);
+
+  if (newdot) {
+    var refdot = insertAt >= 0 ? this.slidesdots[insertAt] : null;
+    this.slidesdots.insertBefore(newslide, refdot);
+    //rebuild array
+    this.slidesdots = this.slider.querySelectorAll(this.options.dotSelector);
   }
+
+  //re-render frames
+  this.render(1, 1);
 };
 
 infinitySlider.prototype.defaultOptions = function (options) {
@@ -328,6 +350,7 @@ infinitySlider.prototype.defaultOptions = function (options) {
     transformationFunc: "translateX",
     transformationMult: 1,
     transformationUnits: "%",
+    transformationJump: 1,
     /**
      * functionalities
      */
